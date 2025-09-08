@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jira Notes - Evernote Style</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background-color: #f8f9fa;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(to bottom, #2c3e50, #34495e);
+            color: white;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .logo h1 {
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo span {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .sidebar-actions {
+            padding: 0 20px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: left;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-primary {
+            background: #3498db;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .search-container {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .filters {
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            opacity: 0.7;
+        }
+        
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .tag:hover, .tag-active {
+            background: #3498db;
+        }
+        
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .top-bar {
+            padding: 16px 24px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            transition: transform 0.3s ease;
+        }
+        
+        .view-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .view-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .view-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .content-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .notes-list {
+            width: 320px;
+            background: white;
+            border-right: 1px solid #eaeaea;
+            overflow-y: auto;
+            padding: 20px 0;
+            transition: transform 0.3s ease;
+        }
+        
+        .notes-list-header {
+            padding: 0 20px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 15px;
+        }
+        
+        .notes-count {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .sort-select {
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            font-size: 13px;
+        }
+        
+        .note-item {
+            padding: 18px 20px;
+            border-bottom: 1px solid #f5f5f5;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .note-item:hover {
+            background: #f9f9f9;
+        }
+        
+        .note-item-active {
+            background: #ebf5fb;
+            border-right: 3px solid #3498db;
+        }
+        
+        .note-item-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .note-item-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .note-item-key {
+            font-size: 13px;
+            color: #3498db;
+            font-weight: 500;
+        }
+        
+        .note-item-date {
+            font-size: 12px;
+            color: #95a5a6;
+            white-space: nowrap;
+        }
+        
+        .note-item-preview {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .note-item-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        
+        .note-item-tag {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background: #edf2f7;
+            color: #4a5568;
+        }
+        
+        /* Editor Styles */
+        .editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .editor-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .editor-title-input {
+            width: 100%;
+            font-size: 24px;
+            font-weight: 600;
+            border: none;
+            padding: 10px 0;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .editor-title-input:focus {
+            outline: none;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .editor-meta {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        
+        .meta-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .meta-label {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+        
+        .meta-input {
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .editor-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+        
+        .editor-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: #3498db;
+        }
+        
+        .section-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 150px;
+            border: 1px solid transparent;
+            transition: border 0.2s;
+        }
+        
+        .section-content:focus {
+            outline: none;
+            border: 1px solid #3498db;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .editor-actions {
+            padding: 20px 30px;
+            border-top: 1px solid #eaeaea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .editor-info {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        
+        .editor-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .action-btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+        
+        .btn-outline {
+            background: white;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219653;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+        
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #bdc3c7;
+        }
+        
+        .empty-title {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .empty-desc {
+            max-width: 400px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .editor-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 220px;
+            }
+            
+            .notes-list {
+                width: 280px;
+            }
+        }
+        
+        /* Focus mode */
+        .focus-mode .sidebar,
+        .focus-mode .notes-list,
+        .focus-mode .top-bar {
+            transform: translateX(-100%);
+            position: absolute;
+        }
+        
+        .focus-mode .editor {
+            width: 100vw;
+        }
+        
+        .focus-indicator {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: #3498db;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            gap: 6px;
+            z-index: 100;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .focus-mode .focus-indicator {
+            display: flex;
+        }
+        
+        .storage-info {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Focus Mode Indicator -->
+    <div class="focus-indicator">
+        <i class="fas fa-expand-arrows-alt"></i> Focus Mode - Press ESC to exit
+    </div>
+    
+    <!-- Storage Info -->
+    <div class="storage-info">
+        <i class="fas fa-database"></i> 
+        <span id="storage-status">Data stored in browser</span>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h1><i class="fas fa-sticky-note"></i> Jira Notes</h1>
+            <span>Evernote-inspired editor</span>
+        </div>
+        
+        <div class="sidebar-actions">
+            <button class="btn btn-primary" id="new-note-btn">
+                <i class="fas fa-plus"></i> New Note
+            </button>
+            <button class="btn" id="export-btn">
+                <i class="fas fa-download"></i> Export
+            </button>
+            <button class="btn" id="import-btn">
+                <i class="fas fa-upload"></i> Import
+            </button>
+        </div>
+        
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search notes..." id="search-input">
+        </div>
+        
+        <div class="filters">
+            <div class="filter-title">Tags</div>
+            <div class="tags-container" id="tags-container">
+                <div class="tag tag-active" data-tag="">All</div>
+                <div class="tag" data-tag="Bugfix">Bugfix</div>
+                <div class="tag" data-tag="Feature">Feature</div>
+                <div class="tag" data-tag="Research">Research</div>
+                <div class="tag" data-tag="UI/UX">UI/UX</div>
+                <div class="tag" data-tag="Backend">Backend</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="view-title">All Notes</div>
+            <div class="view-actions">
+                <button class="view-btn" id="sort-btn">
+                    <i class="fas fa-sort"></i> Sort
+                </button>
+                <button class="view-btn" id="filter-btn">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <button class="view-btn" id="focus-toggle">
+                    <i class="fas fa-expand"></i> Focus Mode
+                </button>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <!-- Notes List -->
+            <div class="notes-list" id="notes-list">
+                <div class="notes-list-header">
+                    <div class="notes-count"><span id="notes-count">0</span> notes</div>
+                    <select class="sort-select" id="sort-select">
+                        <option value="newest">Newest first</option>
+                        <option value="oldest">Oldest first</option>
+                        <option value="title">By title</option>
+                    </select>
+                </div>
+                <div id="notes-container"></div>
+            </div>
+            
+            <!-- Editor -->
+            <div class="editor" id="editor">
+                <div class="empty-state" id="empty-state">
+                    <div class="empty-icon"><i class="fas fa-sticky-note"></i></div>
+                    <div class="empty-title">No note selected</div>
+                    <div class="empty-desc">Select a note from the list or create a new one to start editing</div>
+                    <button class="action-btn btn-primary" id="create-first-note">
+                        <i class="fas fa-plus"></i> Create New Note
+                    </button>
+                </div>
+                
+                <div id="editor-content" style="display: none;">
+                    <div class="editor-header">
+                        <input type="text" class="editor-title-input" id="note-title" placeholder="Note title">
+                        
+                        <div class="editor-meta">
+                            <div class="meta-field">
+                                <span class="meta-label">Issue Key</span>
+                                <input type="text" class="meta-input" id="note-key" placeholder="PROJ-123">
+                            </div>
+                            <div class="meta-field">
+                                <span class="meta-label">Time Spent</span>
+                                <input type="text" class="meta-input" id="note-time" placeholder="3h 45m">
+                            </div>
+                            <div class="meta-field">
+                                <span class="meta-label">Tags (comma separated)</span>
+                                <input type="text" class="meta-input" id="note-tags" placeholder="Bugfix, Authentication">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-content">
+                        <div class="editor-section">
+                            <div class="section-title">
+                                <i class="fas fa-question-circle"></i> Problem
+                            </div>
+                            <div class="section-content" id="note-problem" contenteditable="true" data-placeholder="Describe the problem or issue..."></div>
+                        </div>
+                        
+                        <div class="editor-section">
+                            <div class="section-title">
+                                <i class="fas fa-check-circle"></i> Solution
+                            </div>
+                            <div class="section-content" id="note-solution" contenteditable="true" data-placeholder="Describe the solution or approach..."></div>
+                        </div>
+                        
+                        <div class="editor-section">
+                            <div class="section-title">
+                                <i class="fas fa-lightbulb"></i> Learnings
+                            </div>
+                            <div class="section-content" id="note-learnings" contenteditable="true" data-placeholder="What did you learn from this?"></div>
+                        </div>
+                        
+                        <div class="editor-section">
+                            <div class="section-title">
+                                <i class="fas fa-link"></i> Links & References
+                            </div>
+                            <div class="section-content" id="note-links" contenteditable="true" data-placeholder="Add any relevant links or references..."></div>
+                        </div>
+                    </div>
+                    
+                    <div class="editor-actions">
+                        <div class="editor-info">
+                            Last saved: <span id="last-saved">Never</span>
+                        </div>
+                        <div class="editor-buttons">
+                            <button class="action-btn btn-outline" id="duplicate-btn">
+                                <i class="fas fa-copy"></i> Duplicate
+                            </button>
+                            <button class="action-btn btn-outline" id="export-md-btn">
+                                <i class="fas fa-file-alt"></i> Export MD
+                            </button>
+                            <button class="action-btn btn-success" id="save-btn">
+                                <i class="fas fa-save"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        const STORAGE_KEY = 'jiraNotes';
+        let notes = [];
+        let currentNoteId = null;
+        let activeTag = '';
+        
+        // DOM Elements
+        const notesContainer = document.getElementById('notes-container');
+        const editorContent = document.getElementById('editor-content');
+        const emptyState = document.getElementById('empty-state');
+        const notesCount = document.getElementById('notes-count');
+        const lastSaved = document.getElementById('last-saved');
+        const storageStatus = document.getElementById('storage-status');
+        
+        // Initialize the app
+        function init() {
+            loadNotes();
+            renderNotes();
+            setupEventListeners();
+            updateStorageStatus();
+        }
+        
+        // Load notes from localStorage
+        function loadNotes() {
+            const storedNotes = localStorage.getItem(STORAGE_KEY);
+            if (storedNotes) {
+                notes = JSON.parse(storedNotes);
+            }
+        }
+        
+        // Save notes to localStorage
+        function saveNotes() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+            updateStorageStatus();
+        }
+        
+        // Update storage status indicator
+        function updateStorageStatus() {
+            const used = JSON.stringify(notes).length;
+            const percent = Math.min(100, Math.round((used / (5 * 1024 * 1024)) * 100)); // 5MB max
+            storageStatus.textContent = `Data stored in browser (${percent}% used)`;
+        }
+        
+        // Render notes list
+        function renderNotes() {
+            notesContainer.innerHTML = '';
+            notesCount.textContent = notes.length;
+            
+            if (notes.length === 0) {
+                notesContainer.innerHTML = `
+                    <div class="empty-state" style="padding: 20px;">
+                        <div class="empty-icon">📝</div>
+                        <div class="empty-desc">No notes yet. Create your first note to get started.</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Filter notes by active tag
+            let filteredNotes = notes;
+            if (activeTag) {
+                filteredNotes = notes.filter(note => 
+                    note.tags && note.tags.toLowerCase().includes(activeTag.toLowerCase()));
+            }
+            
+            // Sort notes
+            const sortValue = document.getElementById('sort-select').value;
+            if (sortValue === 'oldest') {
+                filteredNotes = [...filteredNotes].sort((a, b) => a.createdAt - b.createdAt);
+            } else if (sortValue === 'title') {
+                filteredNotes = [...filteredNotes].sort((a, b) => 
+                    (a.title || '').localeCompare(b.title || ''));
+            } else {
+                filteredNotes = [...filteredNotes].sort((a, b) => b.createdAt - a.createdAt);
+            }
+            
+            // Render notes
+            filteredNotes.forEach(note => {
+                const noteEl = document.createElement('div');
+                noteEl.className = `note-item ${currentNoteId === note.id ? 'note-item-active' : ''}`;
+                noteEl.dataset.id = note.id;
+                
+                const date = new Date(note.createdAt);
+                const now = new Date();
+                const isToday = date.toDateString() === now.toDateString();
+                const isYesterday = new Date(now.setDate(now.getDate() - 1)).toDateString() === date.toDateString();
+                
+                let dateStr;
+                if (isToday) dateStr = 'Today';
+                else if (isYesterday) dateStr = 'Yesterday';
+                else dateStr = date.toLocaleDateString();
+                
+                noteEl.innerHTML = `
+                    <div class="note-item-header">
+                        <div>
+                            <div class="note-item-title">${note.title || 'Untitled'}</div>
+                            <div class="note-item-key">${note.key || 'No key'}</div>
+                        </div>
+                        <div class="note-item-date">${dateStr}</div>
+                    </div>
+                    <div class="note-item-preview">
+                        ${note.problem ? note.problem.substring(0, 120) + (note.problem.length > 120 ? '...' : '') : 'No content'}
+                    </div>
+                    <div class="note-item-tags">
+                        ${note.tags ? note.tags.split(',').map(tag => 
+                            `<div class="note-item-tag">${tag.trim()}</div>`
+                        ).join('') : ''}
+                    </div>
+                `;
+                
+                noteEl.addEventListener('click', () => selectNote(note.id));
+                notesContainer.appendChild(noteEl);
+            });
+        }
+        
+        // Select a note to edit
+        function selectNote(id) {
+            currentNoteId = id;
+            const note = notes.find(n => n.id === id);
+            
+            if (note) {
+                document.getElementById('note-title').value = note.title || '';
+                document.getElementById('note-key').value = note.key || '';
+                document.getElementById('note-time').value = note.time || '';
+                document.getElementById('note-tags').value = note.tags || '';
+                document.getElementById('note-problem').innerHTML = note.problem || '';
+                document.getElementById('note-solution').innerHTML = note.solution || '';
+                document.getElementById('note-learnings').innerHTML = note.learnings || '';
+                document.getElementById('note-links').innerHTML = note.links || '';
+                
+                if (note.updatedAt) {
+                    lastSaved.textContent = new Date(note.updatedAt).toLocaleString();
+                }
+                
+                editorContent.style.display = 'block';
+                emptyState.style.display = 'none';
+            }
+            
+            renderNotes();
+        }
+        
+        // Create a new note
+        function createNewNote() {
+            const newNote = {
+                id: Date.now().toString(),
+                title: '',
+                key: '',
+                time: '',
+                tags: '',
+                problem: '',
+                solution: '',
+                learnings: '',
+                links: '',
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+            
+            notes.unshift(newNote);
+            saveNotes();
+            renderNotes();
+            selectNote(newNote.id);
+        }
+        
+        // Save current note
+        function saveCurrentNote() {
+            if (!currentNoteId) return;
+            
+            const noteIndex = notes.findIndex(n => n.id === currentNoteId);
+            if (noteIndex === -1) return;
+            
+            notes[noteIndex] = {
+                ...notes[noteIndex],
+                title: document.getElementById('note-title').value,
+                key: document.getElementById('note-key').value,
+                time: document.getElementById('note-time').value,
+                tags: document.getElementById('note-tags').value,
+                problem: document.getElementById('note-problem').innerHTML,
+                solution: document.getElementById('note-solution').innerHTML,
+                learnings: document.getElementById('note-learnings').innerHTML,
+                links: document.getElementById('note-links').innerHTML,
+                updatedAt: Date.now()
+            };
+            
+            saveNotes();
+            renderNotes();
+            lastSaved.textContent = new Date().toLocaleString();
+            
+            // Show save confirmation
+            const saveBtn = document.getElementById('save-btn');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+            setTimeout(() => {
+                saveBtn.innerHTML = originalText;
+            }, 2000);
+        }
+        
+        // Setup event listeners
+        function setupEventListeners() {
+            // Buttons
+            document.getElementById('new-note-btn').addEventListener('click', createNewNote);
+            document.getElementById('create-first-note').addEventListener('click', createNewNote);
+            document.getElementById('save-btn').addEventListener('click', saveCurrentNote);
+            
+            // Focus mode toggle
+            document.getElementById('focus-toggle').addEventListener('click', toggleFocusMode);
+            
+            // Sort and filter
+            document.getElementById('sort-select').addEventListener('change', renderNotes);
+            
+            // Tag filtering
+            document.querySelectorAll('.tag').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    document.querySelectorAll('.tag').forEach(t => t.classList.remove('tag-active'));
+                    tag.classList.add('tag-active');
+                    activeTag = tag.dataset.tag;
+                    renderNotes();
+                });
+            });
+            
+            // Search
+            document.getElementById('search-input').addEventListener('input', (e) => {
+                // Simple search implementation
+                const searchTerm = e.target.value.toLowerCase();
+                document.querySelectorAll('.note-item').forEach(item => {
+                    const title = item.querySelector('.note-item-title').textContent.toLowerCase();
+                    const key = item.querySelector('.note-item-key').textContent.toLowerCase();
+                    const preview = item.querySelector('.note-item-preview').textContent.toLowerCase();
+                    const tags = item.querySelector('.note-item-tags').textContent.toLowerCase();
+                    
+                    if (title.includes(searchTerm) || key.includes(searchTerm) || 
+                        preview.includes(searchTerm) || tags.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Auto-save when typing
+            let saveTimeout;
+            const autoSaveElements = [
+                document.getElementById('note-title'),
+                document.getElementById('note-key'),
+                document.getElementById('note-time'),
+                document.getElementById('note-tags'),
+                document.getElementById('note-problem'),
+                document.getElementById('note-solution'),
+                document.getElementById('note-learnings'),
+                document.getElementById('note-links')
+            ];
+            
+            autoSaveElements.forEach(el => {
+                el.addEventListener('input', () => {
+                    clearTimeout(saveTimeout);
+                    saveTimeout = setTimeout(saveCurrentNote, 2000);
+                });
+            });
+            
+            // ESC key to exit focus mode
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && document.body.classList.contains('focus-mode')) {
+                    toggleFocusMode();
+                }
+            });
+        }
+        
+        // Toggle focus mode
+        function toggleFocusMode() {
+            document.body.classList.toggle('focus-mode');
+            const icon = document.getElementById('focus-toggle').querySelector('i');
+            if (document.body.classList.contains('focus-mode')) {
+                icon.className = 'fas fa-compress';
+                document.getElementById('focus-toggle').innerHTML = '<i class="fas fa-compress"></i> Exit Focus';
+            } else {
+                icon.className = 'fas fa-expand';
+                document.getElementById('focus-toggle').innerHTML = '<i class="fas fa-expand"></i> Focus Mode';
+            }
+        }
+        
+        // Initialize the app
+        init();
+        
+        // Set up placeholder text for contenteditable divs
+        document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+            el.addEventListener('focus', function() {
+                if (this.textContent === this.dataset.placeholder) {
+                    this.textContent = '';
+                }
+            });
+            
+            el.addEventListener('blur', function() {
+                if (this.textContent === '') {
+                    this.textContent = this.dataset.placeholder;
+                }
+            });
+            
+            // Set initial placeholder if empty
+            if (!el.textContent.trim()) {
+                el.textContent = el.dataset.placeholder;
+            }
+        });
+    </script>
+</body>
+</html>
